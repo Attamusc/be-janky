@@ -17,3 +17,5 @@ func GetJenkinsClient() *gojenkins.Jenkins {
 	jenkins := gojenkins.CreateJenkins(jenkinsURL, "", "").Init()
 	return jenkins
 }
+
+// GetMostRecentBuilds - Return a slice of

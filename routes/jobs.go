@@ -14,5 +14,5 @@ func Jobs(rw http.ResponseWriter, r *http.Request) {
 	jobs := jenkins.GetAllJobs()
 
 	re := context.Get(r, "render").(*render.Render)
-	re.HTML(rw, 200, "index", jobs)
+	re.HTML(rw, 200, "jobs_list", jobs)
 }

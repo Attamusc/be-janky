@@ -1,9 +1,9 @@
-<h1>Jobs</h1>
+<h1>Build Queue</h1>
 
-<div class="jobs-list">
+<div class="builds-list">
   <ul>
     {{ range . }}
-      <li><a href="/jobs/{{ .GetName }}">{{ .GetName }}</a></li>
+      <li><a href="/builds/">{{ .JobName }}</a></li>
     {{ end }}
   </ul>
 </div>

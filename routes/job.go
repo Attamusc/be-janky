@@ -6,31 +6,33 @@ import (
 	"github.com/attamusc/be-janky/lib"
 	"github.com/bndr/gojenkins"
 	"github.com/gorilla/context"
-	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
+	"github.com/zenazn/goji/web"
 )
 
-type templateData struct {
+type jobTemplateData struct {
 	Name   string
 	Builds []gojenkins.Build
 }
 
 // Job - Build queue for the given job
-func Job(rw http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	jobName := params["jobName"]
+func Job(c web.C, rw http.ResponseWriter, r *http.Request) {
+	jobName := c.URLParams["jobName"]
 
 	jenkins := lib.GetJenkinsClient()
 	buildIds := jenkins.GetAllBuildIds(jobName)
 
-	var builds []gojenkins.Build
-
-	for _, build := range buildIds {
+	builds := make([]gojenkins.Build, len(buildIds))
+	for i, build := range buildIds {
 		number := build.Number
-		fullBuild := jenkins.GetBuild(jobName, number)
-		builds = append(builds, *fullBuild)
+		builds[i] = *jenkins.GetBuild(jobName, number)
 	}
 
 	render := context.Get(r, "render").(*render.Render)
-	render.HTML(rw, 200, "job_list", templateData{Name: jobName, Builds: builds})
+	tmplData := jobTemplateData{
+		Name:   jobName,
+		Builds: builds,
+	}
+
+	render.HTML(rw, 200, "job_list", tmplData)
 }

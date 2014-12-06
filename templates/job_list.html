@@ -3,7 +3,7 @@
 <div class="builds-list">
   <ul>
     {{ range .Builds }}
-    <li><a href="/jobs/{{ .Name }}/{{ .GetBuildNumber }}">{{ .GetBuildNumber }}</a></li>
+    <li><a href="/jobs/{{ .Job.GetName }}/{{ .GetBuildNumber }}">{{ .GetBuildNumber }}</a></li>
     {{ end }}
   </ul>
 </div>

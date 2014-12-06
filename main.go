@@ -7,22 +7,22 @@ import (
 	"github.com/attamusc/be-janky/routes"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/context"
-	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
+	"github.com/zenazn/goji/web"
 )
 
-func buildMux() *mux.Router {
-	m := mux.NewRouter().StrictSlash(false)
+func buildAPIMux() *web.Mux {
+	api := web.New()
 
-	m.HandleFunc("/", nil).Methods("GET")
-	m.HandleFunc("/jobs", routes.Jobs).Methods("GET")
-	m.HandleFunc("/jobs/{jobName}", routes.Job).Methods("GET")
-	m.HandleFunc("/jobs/{jobName}/{buildId}", nil).Methods("GET")
+	api.Get("/api", routes.Index)
+	api.Get("/api/jobs", routes.Jobs)
+	api.Get("/api/jobs/:jobName", routes.Job)
+	api.Get("/api/jobs/:jobName/:buildId", routes.Build)
 
-	return m
+	return api
 }
 
-func buildMiddleware(m *mux.Router) *negroni.Negroni {
+func attachMiddleware(m *http.ServeMux) *negroni.Negroni {
 	n := negroni.Classic()
 	re := render.New(render.Options{
 		IndentJSON: true,
@@ -47,8 +47,16 @@ func main() {
 		port = "3000"
 	}
 
-	m := buildMux()
-	n := buildMiddleware(m)
+	mux := http.NewServeMux()
+	n := attachMiddleware(mux)
+
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./public"))))
+	mux.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
+		http.ServeFile(rw, r, "./public/index.html")
+	})
+
+	api := buildAPIMux()
+	mux.Handle("/api", api)
 
 	n.Run(":" + port)
 }
