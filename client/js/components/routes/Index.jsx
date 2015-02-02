@@ -4,12 +4,12 @@ var reqwest = require('reqwest');
 var App = React.createClass({
   componentWillMount: function() {
     return reqwest({
-      url: '/api',
+      url: '/api/recent',
       method: 'get'
     })
     .then(function(data) {
       console.log(data);
-    })
+    });
   },
 
   render: function() {

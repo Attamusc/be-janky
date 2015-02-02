@@ -11,8 +11,8 @@ import (
 // Jobs - Listing of all configured jobs
 func Jobs(rw http.ResponseWriter, r *http.Request) {
 	jenkins := lib.GetJenkinsClient()
-	jobs := jenkins.GetAllJobs()
+	jobs, _ := jenkins.GetJobs()
 
-	re := context.Get(r, "render").(*render.Render)
-	re.HTML(rw, 200, "jobs_list", jobs)
+	render := context.Get(r, "render").(*render.Render)
+	render.JSON(rw, 200, jobs)
 }

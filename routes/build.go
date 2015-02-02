@@ -13,7 +13,7 @@ import (
 // Build - Details about the given build
 func Build(c web.C, rw http.ResponseWriter, r *http.Request) {
 	jobName := c.URLParams["jobName"]
-	number, _ := strconv.ParseInt(c.URLParams["buildId"], 10, 64)
+	number, _ := strconv.Atoi(c.URLParams["buildId"])
 
 	jenkins := lib.GetJenkinsClient()
 	build := jenkins.GetBuild(jobName, number)
