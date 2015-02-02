@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"os"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/attamusc/be-janky/routes"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/context"
+	"github.com/meatballhat/negroni-logrus"
 	"github.com/unrolled/render"
 	"github.com/zenazn/goji/web"
 )
@@ -23,13 +25,17 @@ func buildAPIMux() *web.Mux {
 }
 
 func attachMiddleware(m *http.ServeMux) *negroni.Negroni {
-	n := negroni.Classic()
+	n := negroni.New()
 	re := render.New(render.Options{
 		IndentJSON: true,
 		Directory:  "templates",
 		Extensions: []string{".html", ".tmpl"},
 		Layout:     "application",
 	})
+
+	n.Use(negroni.NewRecovery())
+	n.Use(negronilogrus.NewCustomMiddleware(log.InfoLevel, &log.TextFormatter{ForceColors: true}, "web"))
+	n.Use(negroni.NewStatic(http.Dir("public")))
 
 	n.Use(negroni.HandlerFunc(func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		context.Set(r, "render", re)
