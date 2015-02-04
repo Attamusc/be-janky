@@ -12,8 +12,9 @@ var webpackConfig = require('./webpack.config');
 var webpackInst = webpack(webpackConfig);
 gulp.task("webpack", function(cb) {
   webpackInst.run(function(err, stats) {
-    if(err) throw new gutil.PluginError("webpack", err);
-    gutil.log('recompiled webpack bundles');
+    if(err) { throw new gutil.PluginError("webpack", err); }
+
+    gutil.log("[webpack]", "Build modules successfully");
     cb();
   });
 });

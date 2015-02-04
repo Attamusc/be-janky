@@ -1,7 +1,7 @@
 var path = require('path');
 
 var commonLoaders = [
-	{ test: /\.jsx$/, loader: 'jsx-loader?harmony&stripTypes' }
+	{ test: /\.jsx$/, loader: 'jsx-loader?harmony' }
 ];
 
 var assetsPath = path.join(__dirname, 'public', 'js');

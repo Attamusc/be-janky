@@ -24,7 +24,6 @@ var BuildListItem = React.createClass({
       this._itemClass,
       "build-" + result.toLowerCase()
     ].join(' ');
-
   }
 });
 

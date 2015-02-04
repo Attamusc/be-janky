@@ -1,0 +1,19 @@
+{
+  "maxcomplexity": 10,
+  "maxstatements": 20,
+
+  "boss": true,
+  "browser": true,
+  "esnext": true,
+  "eqeqeq": true,
+  "eqnull": true,
+  "expr": true,
+  "immed": true,
+  "latedef": true,
+  "undef": true,
+  "unused": true,
+  "globals": {
+    "require": true,
+    "module": true
+  }
+}
