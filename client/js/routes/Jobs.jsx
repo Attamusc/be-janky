@@ -22,7 +22,9 @@ var Jobs = React.createClass({
   render: function() {
     var jobs = this.state.jobs.map(function(job) {
       return (
-        <li><Link to="job" params={{name: job.name}}>{job.name}</Link></li>
+        <li key={job.name}>
+          <Link to="job" params={{name: job.name}}>{job.name}</Link>
+        </li>
       );
     });
 

@@ -1,0 +1,8 @@
+[ignore]
+.*/node_modules/jsxhint/test/fixtures/test_flow.js
+
+[include]
+
+[libs]
+
+[options]

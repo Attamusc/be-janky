@@ -3,11 +3,11 @@ var Router = require('react-router');
 var Route = Router.Route;
 var DefaultRoute = Router.DefaultRoute;
 
-var App = require('./components/routes/App.jsx');
-var Index = require('./components/routes/Index.jsx');
-var Jobs = require('./components/routes/Jobs.jsx');
-var Job = require('./components/routes/Job.jsx');
-var Build = require('./components/routes/Build.jsx');
+var App = require('./routes/App.jsx');
+var Index = require('./routes/Index.jsx');
+var Jobs = require('./routes/Jobs.jsx');
+var Job = require('./routes/Job.jsx');
+var Build = require('./routes/Build.jsx');
 
 module.exports = (
   <Route path="/" handler={App}>

@@ -19,17 +19,7 @@ func Job(c web.C, rw http.ResponseWriter, r *http.Request) {
 	jobName := c.URLParams["jobName"]
 
 	jenkins := lib.GetJenkinsClient()
-	buildIds := jenkins.GetAllBuildIds(jobName)
-
-	builds := make([]desconstructedBuild, len(buildIds))
-	//for i, build := range buildIds {
-	//number := build.Number
-	//buildData := jenkins.GetBuild(jobName, number)
-	//builds[i] = desconstructedBuild{
-	//Number: buildData.GetBuildNumber(),
-	//Status: buildData.GetResult(),
-	//}
-	//}
+	builds, _ := jenkins.GetBuilds(jobName)
 
 	render := context.Get(r, "render").(*render.Render)
 	render.JSON(rw, 200, builds)

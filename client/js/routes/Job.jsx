@@ -1,6 +1,7 @@
 var React = require('react');
-var Link = require('react-router').Link;
 var reqwest = require('reqwest');
+
+var BuildListItem = require('../components/BuildListItem.jsx');
 
 var Job = React.createClass({
   getInitialState: function() {
@@ -21,7 +22,7 @@ var Job = React.createClass({
     var name = this.props.params.name;
     var builds = this.state.builds.map(function(build) {
       return (
-        <li><Link to="build" params={{name: name, number: build.number}}>{build.number}</Link></li>
+        <li key={build.number}><BuildListItem jobName={name} build={build}/></li>
       );
     });
 
