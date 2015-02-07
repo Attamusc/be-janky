@@ -10,14 +10,14 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-// Build - Details about the given build
-func Build(c web.C, rw http.ResponseWriter, r *http.Request) {
+// ConsoleStream - Progressive console output of the given build
+func ConsoleStream(c web.C, rw http.ResponseWriter, r *http.Request) {
 	jobName := c.URLParams["jobName"]
 	number, _ := strconv.Atoi(c.URLParams["buildId"])
 
 	jenkins := lib.GetJenkinsClient()
-	build, _ := jenkins.GetBuild(jobName, number)
+	consoleOutput := jenkins.GetProgressiveConsoleOutput(jobName, number)
 
 	render := context.Get(r, "render").(*render.Render)
-	render.JSON(rw, 200, build)
+	render.JSON(rw, 200, consoleOutput)
 }

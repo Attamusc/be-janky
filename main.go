@@ -20,6 +20,7 @@ func buildAPIMux() *web.Mux {
 	api.Get("/api/jobs", routes.Jobs)
 	api.Get("/api/jobs/:jobName", routes.Job)
 	api.Get("/api/jobs/:jobName/:buildId", routes.Build)
+	api.Get("/api/jobs/:jobName/:buildId/console", routes.ConsoleStream)
 
 	return api
 }

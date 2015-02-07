@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -19,13 +20,23 @@ type JenkinsClient struct {
 }
 
 type jobsResponse struct {
-	Wrapper string              `xml:"hudson"`
+	Wrapper string              `xml:"jobs"`
 	Jobs    []jobPreviewElement `xml:"job"`
 }
 
 type buildsResponse struct {
 	Wrapper string                `xml:"builds"`
 	Builds  []buildPreviewElement `xml:"build"`
+}
+
+type buildResponse struct {
+	Wrapper xml.Name `xml:"build"`
+	buildPreviewElement
+}
+
+type consoleResponse struct {
+	Offset string `json:"offset"`
+	Output string `json:"output"`
 }
 
 type jobPreviewElement struct {
@@ -39,8 +50,7 @@ type buildPreviewElement struct {
 	URL      string `xml:"url" json:"url"`
 }
 
-// GetJenkinsClient - Returns jenkins client using environment configured
-// attributes
+// GetJenkinsClient - Returns jenkins client using environment configured attributes
 func GetJenkinsClient() *JenkinsClient {
 	// Switch to using specific tree queries of the jenkins api, like:
 	// http://localhost:8080/api/xml?tree=jobs[name,builds[number,building]]&xpath=//build[number[.=1]]&wrapper=builds
@@ -52,22 +62,11 @@ func GetJenkinsClient() *JenkinsClient {
 	return &JenkinsClient{URL: jenkinsURL}
 }
 
-func fromXMLTo(raw io.Reader, out interface{}) error {
-	if body, err := ioutil.ReadAll(raw); err != nil {
-		fmt.Println("Reading generated an error")
-		return err
-	} else if err := xml.Unmarshal(body, out); err != nil {
-		fmt.Println("Unmarshaling generated an error")
-		return err
-	}
-
-	return nil
-}
-
 // GetJobs - return the configured jobs for this jenkins instance
 func (j *JenkinsClient) GetJobs() ([]jobPreviewElement, error) {
 	raw := j.get("api", map[string]string{
-		"tree": "jobs[name]",
+		"tree":    "jobs[name]",
+		"wrapper": "jobs",
 	})
 
 	jobs := new(jobsResponse)
@@ -97,8 +96,42 @@ func (j *JenkinsClient) GetBuilds(jobName string) ([]buildPreviewElement, error)
 	return builds.Builds, nil
 }
 
-func (j *JenkinsClient) GetBuild(jobName string, id int) interface{} {
-	return nil
+// GetBuild - return information about the build defined by a given job name and job number
+func (j *JenkinsClient) GetBuild(jobName string, id int) (buildPreviewElement, error) {
+	buildXpath := fmt.Sprintf("//job[name[.=\"%s\"]]/build[number[.=%d]]", jobName, id)
+
+	raw := j.get("api", map[string]string{
+		"tree":  "jobs[name,builds[number,building,result,url]]",
+		"xpath": buildXpath,
+	})
+
+	build := new(buildResponse)
+	if err := fromXMLTo(raw, build); err != nil {
+		log.Error(err)
+		return buildPreviewElement{}, err
+	}
+
+	return build.buildPreviewElement, nil
+}
+
+// GetProgressiveConsoleOutput - http://localhost:8080/job/prod_build/7/logText/progressiveHtml?start=0
+// This request is special, because we actually want to service one of the response headers
+func (j *JenkinsClient) GetProgressiveConsoleOutput(jobName string, id int) consoleResponse {
+	uriString := []string{j.URL, "job", jobName, strconv.Itoa(id), "logText", "progressiveHtml"}
+
+	res, _ := goreq.Request{
+		Uri: strings.Join(uriString, "/"),
+		QueryString: toQueryParams(map[string]string{
+			"start": "0",
+		}),
+	}.Do()
+
+	output, _ := res.Body.ToString()
+
+	return consoleResponse{
+		Offset: res.Header.Get("X-Text-Size"),
+		Output: output,
+	}
 }
 
 func (j *JenkinsClient) get(uri string, params map[string]string) *goreq.Body {
@@ -108,6 +141,18 @@ func (j *JenkinsClient) get(uri string, params map[string]string) *goreq.Body {
 	}.Do()
 
 	return res.Body
+}
+
+func fromXMLTo(raw io.Reader, out interface{}) error {
+	if body, err := ioutil.ReadAll(raw); err != nil {
+		fmt.Println("Reading generated an error")
+		return err
+	} else if err := xml.Unmarshal(body, out); err != nil {
+		fmt.Println("Unmarshaling generated an error")
+		return err
+	}
+
+	return nil
 }
 
 func toQueryParams(params map[string]string) url.Values {
