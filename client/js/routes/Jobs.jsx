@@ -1,29 +1,30 @@
 var React = require('react');
 var Link = require('react-router').Link;
-var reqwest = require('reqwest');
+var Immutable = require('immutable');
+var { Map, List } = Immutable;
+var xhr = require('../lib/xhr');
 
 var Jobs = React.createClass({
   getInitialState: function() {
-    return {
-      jobs: []
-    };
+    return Map({
+      jobs: List([])
+    });
   },
 
   componentWillMount: function() {
-    reqwest({
-      url: '/api/jobs',
-      method: 'get'
-    })
-    .then(function(data) {
-      this.setState({ jobs: data });
-    }.bind(this));
+    xhr({ url: '/api/jobs' })
+    .then((data) => {
+      this.replaceState(this.state.set('jobs', data));
+    });
   },
 
   render: function() {
-    var jobs = this.state.jobs.map(function(job) {
+    var jobs = this.state.get('jobs', []).map(function(job) {
+      var name = job.get('name');
+
       return (
-        <li key={job.name}>
-          <Link to="job" params={{name: job.name}}>{job.name}</Link>
+        <li key={name}>
+          <Link to="job" params={{name: name}}>{name}</Link>
         </li>
       );
     });
@@ -34,7 +35,7 @@ var Jobs = React.createClass({
 
         <div className="jobs-list">
           <ul>
-            {jobs}
+            {jobs.toArray()}
           </ul>
         </div>
       </div>
@@ -43,4 +44,3 @@ var Jobs = React.createClass({
 });
 
 module.exports = Jobs;
-

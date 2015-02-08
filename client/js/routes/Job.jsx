@@ -14,17 +14,14 @@ var Job = React.createClass({
       method: 'get'
     })
     .then(function(data) {
-      this.setState({ builds: data });
+      this.setState({
+        builds: (data.builds && data.builds.length) ? data.builds : []
+      });
     }.bind(this));
   },
 
   render: function() {
     var name = this.props.params.name;
-    var builds = this.state.builds.map(function(build) {
-      return (
-        <li key={build.number}><BuildListItem jobName={name} build={build}/></li>
-      );
-    });
 
     return (
       <div className="main">
@@ -32,11 +29,27 @@ var Job = React.createClass({
 
         <div className="builds-list">
           <ul>
-            {builds}
+            {this._genBuildsList(name)}
           </ul>
         </div>
       </div>
     );
+  },
+
+  _genBuildsList: function(name) {
+    var builds = this.state.builds.map(function(build) {
+      return (
+        <li key={build.number}><BuildListItem jobName={name} build={build}/></li>
+      );
+    });
+
+    if (!builds.length) {
+      builds = (
+        <p>No builds yet for {name}</p>
+      );
+    }
+
+    return builds;
   }
 });
 
