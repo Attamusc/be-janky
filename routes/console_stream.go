@@ -14,9 +14,10 @@ import (
 func ConsoleStream(c web.C, rw http.ResponseWriter, r *http.Request) {
 	jobName := c.URLParams["jobName"]
 	number, _ := strconv.Atoi(c.URLParams["buildId"])
+	offset := r.URL.Query().Get("start")
 
 	jenkins := lib.GetJenkinsClient()
-	consoleOutput := jenkins.GetProgressiveConsoleOutput(jobName, number)
+	consoleOutput := jenkins.GetProgressiveConsoleOutput(jobName, number, offset)
 
 	render := context.Get(r, "render").(*render.Render)
 	render.JSON(rw, 200, consoleOutput)

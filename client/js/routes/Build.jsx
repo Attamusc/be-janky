@@ -1,5 +1,6 @@
 var React = require('react');
-var reqwest = require('reqwest');
+var { Map, List } = require('immutable');
+var xhr = require('../lib/xhr');
 
 var Build = React.createClass({
   _progressiveConsoleIntervalId: null,
@@ -7,25 +8,22 @@ var Build = React.createClass({
   _consoleRequestInterval: 1000,
 
   getInitialState: function() {
-    return {
-      build: {},
+    return Map({
+      build: Map({}),
       consoleOffset: 0,
       console: ''
-    };
+    });
   },
 
   componentWillMount: function() {
-    reqwest({
+    xhr({
       url: '/api/jobs/' + this.props.params.name + '/' + this.props.params.number,
       method: 'get'
     })
-    .then(function(data) {
-      this.setState({ build: data });
-    }.bind(this));
-
-    this._progressiveConsoleIntervalId = window.setInterval(function() {
-      this._requestNewConsoleOutput();
-    }.bind(this), this._consoleRequestInterval);
+    .then((data) => {
+      this.replaceState(this.state.set('build', data));
+    })
+    .then(() => this._requestConsoleOutput());
   },
 
   componentWillUnmount: function() {
@@ -36,44 +34,54 @@ var Build = React.createClass({
   },
 
   render: function() {
+    console.log(this.state.get);
     var jobName = this.props.params.name;
     var jobNumber = this.props.params.number;
-    var build = this.state.build;
-    var console = this.state.console;
+    var build = this.state.get('build');
+    var consoleOutput = this.state.get('console');
+
+    console.log('hello');
 
     return (
       <div className="build-detail">
         <h1>{jobName}#{jobNumber}</h1>
-        <a href={build.url + "console"} target="_blank">console</a>
-        <section class="console-output">
+        <a href={build.get('url') + "console"} target="_blank">console</a>
+        <section className="console-output">
           <h1>Console Output</h1>
-          <pre>{console}</pre>
+          <pre dangerouslySetInnerHTML={{__html: consoleOutput}} />
         </section>
       </div>
     );
   },
 
-  _requestNewConsoleOutput: function() {
+  _requestConsoleOutput: function() {
     var name = this.props.params.name;
     var number = this.props.params.number;
-    var consoleOffset = this.props.params.consoleOffset;
+    var consoleOffset = this.state.get('consoleOffset');
 
-    reqwest({
+    return xhr({
       url: '/api/jobs/' + name + '/' + number + '/console',
-      data: {
-        start: consoleOffset
-      },
+      data: { start: consoleOffset },
       method: 'get'
     })
-    .then(function(data) {
-      var offset = data.offset;
-      var output = data.output;
+    .then((data) => {
+      var offset = data.get('offset');
+      var output = data.get('output');
+      var more = data.get('more');
 
-      this.setState({
-        console: output,
-        consoleOffset: offset
-      });
-    }.bind(this));
+      if (this.state.get('offset') !== offset) {
+        this.replaceState(this.state.merge(Map({
+          console: this.state.get('console') + output,
+          consoleOffset: offset
+        })));
+      }
+
+      if (more) {
+        this._progressiveConsoleIntervalId = window.setTimeout(() => {
+          this._requestConsoleOutput();
+        }, this._consoleRequestInerval);
+      }
+    });
   }
 });
 

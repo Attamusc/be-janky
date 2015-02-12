@@ -9,12 +9,12 @@ var BuildListItem = React.createClass({
     var build = this.props.build;
 
     return (
-      <div className={this._resultToClassNames(build.result)}>
+      <div className={this._resultToClassNames(build.get('result'))}>
         <h1>
-          <Link to="build" params={{name: jobName, number: build.number}}>{build.number}</Link>
+          <Link to="build" params={{name: jobName, number: build.get('number')}}>{build.get('number')}</Link>
         </h1>
-        <div><a href={build.url + "console"} target="_blank">console</a></div>
-        <div>{build.result}</div>
+        <div><a href={build.get('url') + "console"} target="_blank">console</a></div>
+        <div>{build.get('result')}</div>
       </div>
     );
   },

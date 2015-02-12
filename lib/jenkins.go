@@ -36,6 +36,7 @@ type buildResponse struct {
 
 type consoleResponse struct {
 	Offset string `json:"offset"`
+	More   bool   `json:"more"`
 	Output string `json:"output"`
 }
 
@@ -116,13 +117,13 @@ func (j *JenkinsClient) GetBuild(jobName string, id int) (buildPreviewElement, e
 
 // GetProgressiveConsoleOutput - http://localhost:8080/job/prod_build/7/logText/progressiveHtml?start=0
 // This request is special, because we actually want to service one of the response headers
-func (j *JenkinsClient) GetProgressiveConsoleOutput(jobName string, id int) consoleResponse {
+func (j *JenkinsClient) GetProgressiveConsoleOutput(jobName string, id int, offset string) consoleResponse {
 	uriString := []string{j.URL, "job", jobName, strconv.Itoa(id), "logText", "progressiveHtml"}
 
 	res, _ := goreq.Request{
 		Uri: strings.Join(uriString, "/"),
 		QueryString: toQueryParams(map[string]string{
-			"start": "0",
+			"start": offset,
 		}),
 	}.Do()
 
@@ -130,6 +131,7 @@ func (j *JenkinsClient) GetProgressiveConsoleOutput(jobName string, id int) cons
 
 	return consoleResponse{
 		Offset: res.Header.Get("X-Text-Size"),
+		More:   res.Header.Get("X-More-Data") != "",
 		Output: output,
 	}
 }
