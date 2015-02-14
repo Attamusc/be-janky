@@ -1,12 +1,12 @@
-var React = require('react');
-var Link = require('react-router').Link;
+import React from 'react';
+import { Link } from 'react-router';
 
-var BuildListItem = React.createClass({
+const BuildListItem = React.createClass({
   _itemClass: "build-item",
 
-  render: function() {
-    var jobName = this.props.jobName;
-    var build = this.props.build;
+  render() {
+    const jobName = this.props.jobName;
+    const build = this.props.build;
 
     return (
       <div className={this._resultToClassNames(build.get('result'))}>
@@ -19,7 +19,7 @@ var BuildListItem = React.createClass({
     );
   },
 
-  _resultToClassNames: function(result) {
+  _resultToClassNames(result) {
     return [
       this._itemClass,
       "build-" + result.toLowerCase()
@@ -27,4 +27,4 @@ var BuildListItem = React.createClass({
   }
 });
 
-module.exports = BuildListItem;
+export default BuildListItem;

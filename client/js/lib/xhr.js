@@ -1,8 +1,8 @@
-var Immutable = require('immutable');
-var transit = require('transit-js');
-var reqwest = require('reqwest');
+import Immutable from 'immutable';
+import transit from 'transit-js';
+import reqwest from 'reqwest';
 
-var reader = transit.reader("json", {
+const reader = transit.reader("json", {
   arrayBuilder: {
     init: function() { return Immutable.List().asMutable(); },
     add: function(ret, val) { return ret.push(val); },
@@ -15,7 +15,7 @@ var reader = transit.reader("json", {
   }
 });
 
-module.exports = function(options) {
+function xhr(options) {
   options.type = 'text';
   options.method = 'get';
 
@@ -23,4 +23,6 @@ module.exports = function(options) {
   .then(function(data) {
     return reader.read(data.response);
   });
-};
+}
+
+export default xhr;

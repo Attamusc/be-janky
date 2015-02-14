@@ -1,13 +1,11 @@
-var React = require('react');
-var Router = require('react-router');
-var Route = Router.Route;
-var DefaultRoute = Router.DefaultRoute;
+import React from 'react';
+import { Route, DefaultRoute } from 'react-router';
 
-var App = require('./routes/App.jsx');
-var Index = require('./routes/Index.jsx');
-var Jobs = require('./routes/Jobs.jsx');
-var Job = require('./routes/Job.jsx');
-var Build = require('./routes/Build.jsx');
+const App = require('./routes/App.jsx');
+const Index = require('./routes/Index.jsx');
+const Jobs = require('./routes/Jobs.jsx');
+const Job = require('./routes/Job.jsx');
+const Build = require('./routes/Build.jsx');
 
 module.exports = (
   <Route path="/" handler={App}>

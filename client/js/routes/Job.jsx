@@ -1,21 +1,21 @@
-var React = require('react/addons');
-var { Map, List } = require('immutable');
-var xhr = require('../lib/xhr');
+import React from 'react/addons';
+import { Map, List } from 'immutable';
+import xhr from '../lib/xhr';
 
-var BuildListItem = require('../components/BuildListItem.jsx');
+import BuildListItem from '../components/BuildListItem.jsx';
 
-var Job = React.createClass({
+const Job = React.createClass({
   mixins: [React.addons.PureRenderMixin],
 
   _jobPollId: null,
 
   _requestInterval: 2500,
 
-  getInitialState: function() {
+  getInitialState() {
     return Map({ builds: List([]) });
   },
 
-  componentWillMount: function() {
+  componentWillMount() {
     this._requestJobBuilds()
     .then(() => {
       this._jobPollId = window.setInterval(() => {
@@ -24,15 +24,15 @@ var Job = React.createClass({
     });
   },
 
-  componentWillUnmount: function() {
+  componentWillUnmount() {
     if (this._jobPollId) {
       window.clearInterval(this._jobPollId);
       this._jobPollId = null;
     }
   },
 
-  render: function() {
-    var name = this.props.params.name;
+  render() {
+    const name = this.props.params.name;
 
     return (
       <div className="main">
@@ -47,8 +47,8 @@ var Job = React.createClass({
     );
   },
 
-  _genBuildsList: function(name) {
-    var builds = this.state.get('builds').map(function(build) {
+  _genBuildsList(name) {
+    let builds = this.state.get('builds').map(function(build) {
       return (
         <li key={build.get('number')}><BuildListItem jobName={name} build={build}/></li>
       );
@@ -63,7 +63,7 @@ var Job = React.createClass({
     return builds;
   },
 
-  _requestJobBuilds: function() {
+  _requestJobBuilds() {
     return xhr({
       url: '/api/jobs/' + this.props.params.name,
       method: 'get'
@@ -76,4 +76,4 @@ var Job = React.createClass({
   }
 });
 
-module.exports = Job;
+export default Job;

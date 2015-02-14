@@ -1,13 +1,13 @@
-var React = require('react');
-var { Map, List } = require('immutable');
-var xhr = require('../lib/xhr');
+import React from 'react';
+import { Map, List } from 'immutable';
+import xhr from '../lib/xhr';
 
-var Build = React.createClass({
+const Build = React.createClass({
   _progressiveConsoleIntervalId: null,
 
   _consoleRequestInterval: 1000,
 
-  getInitialState: function() {
+  getInitialState() {
     return Map({
       build: Map({}),
       consoleOffset: 0,
@@ -15,7 +15,7 @@ var Build = React.createClass({
     });
   },
 
-  componentWillMount: function() {
+  componentWillMount() {
     xhr({
       url: '/api/jobs/' + this.props.params.name + '/' + this.props.params.number,
       method: 'get'
@@ -26,21 +26,18 @@ var Build = React.createClass({
     .then(() => this._requestConsoleOutput());
   },
 
-  componentWillUnmount: function() {
+  componentWillUnmount() {
     if (this._progressiveConsoleIntervalId) {
       window.clearInterval(this._progressiveConsoleIntervalId);
       this._progressiveConsoleIntervalId = null;
     }
   },
 
-  render: function() {
-    console.log(this.state.get);
-    var jobName = this.props.params.name;
-    var jobNumber = this.props.params.number;
-    var build = this.state.get('build');
-    var consoleOutput = this.state.get('console');
-
-    console.log('hello');
+  render() {
+    const jobName = this.props.params.name;
+    const jobNumber = this.props.params.number;
+    const build = this.state.get('build');
+    const consoleOutput = this.state.get('console');
 
     return (
       <div className="build-detail">
@@ -54,10 +51,10 @@ var Build = React.createClass({
     );
   },
 
-  _requestConsoleOutput: function() {
-    var name = this.props.params.name;
-    var number = this.props.params.number;
-    var consoleOffset = this.state.get('consoleOffset');
+  _requestConsoleOutput() {
+    const name = this.props.params.name;
+    const number = this.props.params.number;
+    const consoleOffset = this.state.get('consoleOffset');
 
     return xhr({
       url: '/api/jobs/' + name + '/' + number + '/console',
@@ -65,9 +62,9 @@ var Build = React.createClass({
       method: 'get'
     })
     .then((data) => {
-      var offset = data.get('offset');
-      var output = data.get('output');
-      var more = data.get('more');
+      const offset = data.get('offset');
+      const output = data.get('output');
+      const more = data.get('more');
 
       if (this.state.get('offset') !== offset) {
         this.replaceState(this.state.merge(Map({
@@ -85,4 +82,4 @@ var Build = React.createClass({
   }
 });
 
-module.exports = Build;
+export default Build;

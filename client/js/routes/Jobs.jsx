@@ -1,26 +1,25 @@
-var React = require('react');
-var Link = require('react-router').Link;
-var Immutable = require('immutable');
-var { Map, List } = Immutable;
-var xhr = require('../lib/xhr');
+import React from 'react';
+import { Link } from 'react-router';
+import { Map, List } from 'immutable';
+import xhr from '../lib/xhr';
 
-var Jobs = React.createClass({
-  getInitialState: function() {
+const Jobs = React.createClass({
+  getInitialState() {
     return Map({
       jobs: List([])
     });
   },
 
-  componentWillMount: function() {
+  componentWillMount() {
     xhr({ url: '/api/jobs' })
     .then((data) => {
       this.replaceState(this.state.set('jobs', data));
     });
   },
 
-  render: function() {
-    var jobs = this.state.get('jobs', []).map(function(job) {
-      var name = job.get('name');
+  render() {
+    const jobs = this.state.get('jobs', []).map(function(job) {
+      const name = job.get('name');
 
       return (
         <li key={name}>
@@ -43,4 +42,4 @@ var Jobs = React.createClass({
   }
 });
 
-module.exports = Jobs;
+export default Jobs;

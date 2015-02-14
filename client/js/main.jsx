@@ -1,11 +1,9 @@
-/* @flow */
-
-var React = require('react');
-var Router = require('react-router');
-var routes = require('./routes.jsx');
+import React from 'react';
+import Router from 'react-router';
+import routes from './routes.jsx';
 
 Router.run(routes, Router.HistoryLocation, function(Handler, state) {
-  var params = state.params;
+  const params = state.params;
   React.render(<Handler params={params}/>, document.body);
 });
 
