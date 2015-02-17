@@ -15,7 +15,7 @@ type taskTemplateData struct {
 // Index - List the current build queue
 func Index(rw http.ResponseWriter, r *http.Request) {
 	jenkins := lib.GetJenkinsClient()
-	jobs, _ := jenkins.GetJobs()
+	jobs, _ := jenkins.GetRecentBuilds()
 
 	render := context.Get(r, "render").(*render.Render)
 	render.JSON(rw, 200, jobs)

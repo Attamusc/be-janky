@@ -9,9 +9,8 @@ const Build = require('./routes/Build.jsx');
 
 module.exports = (
   <Route path="/" handler={App}>
-    <DefaultRoute handler={Index}/>
-    <Route name="jobs" path="/jobs" handler={Jobs}/>
-    <Route name="job" path="/jobs/:name" handler={Job}/>
-    <Route name="build" path="/jobs/:name/:number" handler={Build}/>
+    <DefaultRoute handler={Jobs}/>
+    <Route name="job" path="/:name" handler={Job}/>
+    <Route name="build" path="/:name/:number" handler={Build}/>
   </Route>
 );

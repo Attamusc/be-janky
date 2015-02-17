@@ -13,11 +13,10 @@ import (
 func Jobs(rw http.ResponseWriter, r *http.Request) {
 	jenkins := lib.GetJenkinsClient()
 
-	jobs, err := jenkins.GetJobs()
-	if err != nil {
+	if jobs, err := jenkins.GetJobs(); err != nil {
 		log.Error(err)
+	} else {
+		render := context.Get(r, "render").(*render.Render)
+		render.JSON(rw, 200, jobs)
 	}
-
-	render := context.Get(r, "render").(*render.Render)
-	render.JSON(rw, 200, jobs)
 }

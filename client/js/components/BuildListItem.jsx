@@ -22,7 +22,7 @@ const BuildListItem = React.createClass({
   _resultToClassNames(result) {
     return [
       this._itemClass,
-      "build-" + result.toLowerCase()
+      "build-" + (result ? result.toLowerCase() : 'inprogress')
     ].join(' ');
   }
 });

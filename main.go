@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/attamusc/be-janky/routes"
@@ -58,8 +59,13 @@ func main() {
 	n := attachMiddleware(mux)
 
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./public"))))
+
 	mux.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		http.ServeFile(rw, r, "./public/index.html")
+		if strings.HasSuffix(r.URL.Path, "/") {
+			http.Redirect(rw, r, strings.TrimRight(r.URL.Path, "/"), 302)
+		} else {
+			http.ServeFile(rw, r, "./public/index.html")
+		}
 	})
 
 	api := buildAPIMux()

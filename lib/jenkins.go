@@ -78,6 +78,12 @@ func (j *JenkinsClient) GetJobs() ([]jobPreviewElement, error) {
 	return jobs.Jobs, nil
 }
 
+// GetRecentBuilds - return the most recent builds that have taken place on the configured
+// jenkins instance
+func (j *JenkinsClient) GetRecentBuilds() ([]buildPreviewElement, error) {
+	return []buildPreviewElement{}, nil
+}
+
 // GetBuilds - http://localhost:8080/api/xml?tree=jobs[name,builds[number,building,result,url]]&xpath=//job[name[.=%22prod_build%22]]/build&wrapper=builds
 func (j *JenkinsClient) GetBuilds(jobName string) ([]buildPreviewElement, error) {
 	jobBuildsXpath := fmt.Sprintf("//job[name[.=\"%s\"]]/build", jobName)

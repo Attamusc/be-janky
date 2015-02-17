@@ -1,0 +1,21 @@
+@import "vendor/materialize/materialize";
+
+.nav-wrapper {
+  padding-left: 20px;
+}
+
+.build-item {
+  @extend .card;
+}
+
+.build-success {
+  @extend .green.darken-1;
+}
+
+.build-failure {
+  @extend .red.darken-1;
+}
+
+.build-inprogress {
+  @extend .amber.darken-1;
+}
