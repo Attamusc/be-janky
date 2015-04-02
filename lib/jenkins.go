@@ -14,6 +14,8 @@ import (
 	"github.com/franela/goreq"
 )
 
+const requestSlice = 10
+
 // JenkinsClient - Wrapper for jenkins connection
 type JenkinsClient struct {
 	URL string
@@ -53,8 +55,6 @@ type buildPreviewElement struct {
 
 // GetJenkinsClient - Returns jenkins client using environment configured attributes
 func GetJenkinsClient() *JenkinsClient {
-	// Switch to using specific tree queries of the jenkins api, like:
-	// http://localhost:8080/api/xml?tree=jobs[name,builds[number,building]]&xpath=//build[number[.=1]]&wrapper=builds
 	jenkinsURL := os.Getenv("JENKINS_URL")
 	if jenkinsURL == "" {
 		jenkinsURL = "http://localhost:8080"
@@ -65,17 +65,34 @@ func GetJenkinsClient() *JenkinsClient {
 
 // GetJobs - return the configured jobs for this jenkins instance
 func (j *JenkinsClient) GetJobs() ([]jobPreviewElement, error) {
-	raw := j.get("api", map[string]string{
-		"tree":    "jobs[name]",
-		"wrapper": "jobs",
-	})
+	var allJobs []jobPreviewElement
 
-	jobs := new(jobsResponse)
-	if err := fromXMLTo(raw, jobs); err != nil {
-		return nil, err
+	jobsChan := make(chan []jobPreviewElement)
+
+	for i := 0; i < 3; i++ {
+		go func(elem int) {
+			raw := j.get("api", map[string]string{
+				"tree":    fmt.Sprintf("jobs[name]{%d}", elem),
+				"wrapper": "jobs",
+			})
+
+			jobs := new(jobsResponse)
+			if err := fromXMLTo(raw, jobs); err != nil {
+				jobsChan <- nil
+			}
+
+			jobsChan <- jobs.Jobs
+		}(i)
 	}
 
-	return jobs.Jobs, nil
+	for i := 0; i < 3; i++ {
+		select {
+		case resp := <-jobsChan:
+			allJobs = append(allJobs, resp...)
+		}
+	}
+
+	return allJobs, nil
 }
 
 // GetRecentBuilds - return the most recent builds that have taken place on the configured
@@ -100,7 +117,13 @@ func (j *JenkinsClient) GetBuilds(jobName string) ([]buildPreviewElement, error)
 		return nil, err
 	}
 
-	return builds.Builds, nil
+	response := []buildPreviewElement{}
+
+	if len(builds.Builds) > 0 {
+		response = builds.Builds
+	}
+
+	return response, nil
 }
 
 // GetBuild - return information about the build defined by a given job name and job number
@@ -143,6 +166,8 @@ func (j *JenkinsClient) GetProgressiveConsoleOutput(jobName string, id int, offs
 }
 
 func (j *JenkinsClient) get(uri string, params map[string]string) *goreq.Body {
+	log.Infof("Requesting uri: '%s' with params: %s", uri, params)
+
 	res, _ := goreq.Request{
 		Uri:         strings.Join([]string{j.URL, uri, "xml"}, "/"),
 		QueryString: toQueryParams(params),

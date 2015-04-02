@@ -1,27 +1,33 @@
 import React from 'react/addons';
 import { Map, List } from 'immutable';
-import xhr from '../lib/xhr';
 
-import BuildListItem from '../components/BuildListItem.jsx';
+import BuildStore from '../stores/BuildStore';
+import JobActions from '../actions/JobActions';
+
+import BuildList from '../components/BuildList.jsx';
+import EmptyBuildList from '../components/EmptyBuildList.jsx';
 
 const Job = React.createClass({
-  mixins: [React.addons.PureRenderMixin],
-
-  _jobPollId: null,
-
-  _requestInterval: 2500,
+  mixins: [BuildStore.mixin],
 
   getInitialState() {
-    return Map({ builds: List([]) });
+    return {
+      height: window.innerHeight - 64,
+      data: Map({
+        builds: BuildStore.getBuilds()
+      })
+    };
   },
 
+  _jobPollId: null,
+  _requestInterval: 2500,
+
   componentWillMount() {
-    this._requestJobBuilds()
-    .then(() => {
-      this._jobPollId = window.setInterval(() => {
-        this._requestJobBuilds();
-      }, this._requestInterval);
-    });
+    JobActions.loadJobBuilds(this.props.params.name);
+  },
+
+  componentWillReceiveProps(newProps) {
+    JobActions.loadJobBuilds(newProps.params.name);
   },
 
   componentWillUnmount() {
@@ -31,48 +37,58 @@ const Job = React.createClass({
     }
   },
 
-  render() {
-    const name = this.props.params.name;
-
-    return (
-      <div className="main">
-        <h1>{name}</h1>
-
-        <div className="builds-list">
-          <ul>
-            {this._genBuildsList(name).toArray()}
-          </ul>
-        </div>
-      </div>
-    );
+  componentDidMount() {
+    window.addEventListener('resize', () => this._handleResize());
   },
 
-  _genBuildsList(name) {
-    let builds = this.state.get('builds').map(function(build) {
-      return (
-        <li key={build.get('number')}><BuildListItem jobName={name} build={build}/></li>
-      );
-    });
+  storeDidChange() {
+    this.setState({ data: this.state.data.set('builds', BuildStore.getBuilds()) });
+  },
 
-    if (!builds.count()) {
-      builds = List([(
-        <li key="empty-builds">No builds yet for {name}</li>
-      )]);
+  render() {
+    let innerContent;
+
+    if (this.state.data.get('builds').count()) {
+      innerContent = <BuildList builds={this.state.data.get('builds')} jobName={this.props.params.name} height={this.state.height} />;
+    }
+    else {
+      innerContent = <EmptyBuildList />;
     }
 
-    return builds;
+    return innerContent;
   },
 
-  _requestJobBuilds() {
-    return xhr({
-      url: '/api/jobs/' + this.props.params.name,
-      method: 'get'
-    })
-    .then((data) => {
-      if (data.get('builds')) {
-        this.replaceState(this.state.set('builds', data.get('builds')));
-      }
+  _handleResize() {
+    this.setState({ height: window.innerHeight - 64 });
+  },
+
+  _requestInitialJobBuilds(props) {
+    const jobName = props.params.name;
+
+    this.setState({ data: this.state.data.set('loading', true) });
+
+    this._requestJobBuilds(props)
+    .then(() => {
+      this.setState({ data: this.state.data.set('loading', false) });
+
+      const pollingId = this._jobPollId = window.setInterval(() => {
+        if (jobName !== this.props.params.name) {
+          window.clearInterval(pollingId);
+        }
+
+        this._requestJobBuilds(props);
+      }, this._requestInterval);
     });
+  },
+
+  _requestJobBuilds(props) {
+    const jobName = props.params.name;
+
+    if (jobName !== this.props.params.name) { return; }
+
+    if (data.get('builds')) {
+      this.setState({ data: this.state.data.set('builds', data.get('builds')) });
+    }
   }
 });
 

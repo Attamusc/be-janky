@@ -8,9 +8,7 @@ const JobsListItem = React.createClass({
     const name = this.props.job.get('name');
 
     return (
-      <li className="collection-item">
-        <Link to="job" params={{name: name}}>{name}</Link>
-      </li>
+      <Link to="jobs.job" params={{name: name}} className="collection-item center">{name}</Link>
     );
   }
 });

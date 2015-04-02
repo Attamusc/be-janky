@@ -8,10 +8,7 @@ const App = React.createClass({
     return (
       <div className="content">
         <Header/>
-
-        <div className="container">
-          <RouteHandler {...this.props}/>
-        </div>
+        <RouteHandler {...this.props}/>
       </div>
     );
   }

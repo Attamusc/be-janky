@@ -8,9 +8,10 @@ const reader = transit.reader("json", {
     add: function(ret, val) { return ret.push(val); },
     finalize: function(ret) { return ret.asImmutable(); }
   },
+
   mapBuilder: {
     init: function() { return Immutable.OrderedMap().asMutable(); },
-    add: function(ret, key, val) { return ret.set(key, val);  },
+    add: function(ret, key, val) { return ret.set(key, val); },
     finalize: function(ret) { return ret.asImmutable(); }
   }
 });
@@ -20,9 +21,7 @@ function xhr(options) {
   options.method = 'get';
 
   return reqwest(options)
-  .then(function(data) {
-    return reader.read(data.response);
-  });
+  .then((data) => reader.read(data.response));
 }
 
 export default xhr;

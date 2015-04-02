@@ -6,7 +6,7 @@ const Header = React.createClass({
   render() {
     return (
       <nav>
-        <div className="nav-wrapper blue lighten-1">
+        <div className="nav-wrapper">
           <a href="/" className="brand-logo">Be-Janky</a>
         </div>
       </nav>

@@ -1,7 +1,9 @@
-import React from 'react';
+import React from 'react/addons';
 import { Link } from 'react-router';
 
 const BuildListItem = React.createClass({
+  mixins: [React.PureRenderMixin],
+
   _itemClass: "build-item",
 
   render() {
