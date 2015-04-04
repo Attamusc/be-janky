@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/url"
 	"os"
 	"strconv"
@@ -14,7 +15,7 @@ import (
 	"github.com/franela/goreq"
 )
 
-const requestSlice = 10
+const requestSlice = 10.0
 
 // JenkinsClient - Wrapper for jenkins connection
 type JenkinsClient struct {
@@ -47,10 +48,13 @@ type jobPreviewElement struct {
 }
 
 type buildPreviewElement struct {
-	Number   int    `xml:"number" json:"number"`
-	Building bool   `xml:"building" json:"building"`
-	Result   string `xml:"result" json:"result"`
-	URL      string `xml:"url" json:"url"`
+	Number    int    `xml:"number" json:"number"`
+	Building  bool   `xml:"building" json:"building"`
+	Result    string `xml:"result" json:"result"`
+	URL       string `xml:"url" json:"url"`
+	Duration  int    `xml:"duration" json:"duration"`
+	Timestamp int    `xml:"timestamp" json:"timestamp"`
+	Estimated int    `xml:"estimatedDuration" json:"estimated"`
 }
 
 // GetJenkinsClient - Returns jenkins client using environment configured attributes
@@ -68,24 +72,13 @@ func (j *JenkinsClient) GetJobs() ([]jobPreviewElement, error) {
 	var allJobs []jobPreviewElement
 
 	jobsChan := make(chan []jobPreviewElement)
+	forkedRequests := int(math.Ceil(10 / requestSlice))
 
-	for i := 0; i < 3; i++ {
-		go func(elem int) {
-			raw := j.get("api", map[string]string{
-				"tree":    fmt.Sprintf("jobs[name]{%d}", elem),
-				"wrapper": "jobs",
-			})
-
-			jobs := new(jobsResponse)
-			if err := fromXMLTo(raw, jobs); err != nil {
-				jobsChan <- nil
-			}
-
-			jobsChan <- jobs.Jobs
-		}(i)
+	for i := 0; i < forkedRequests; i++ {
+		go j.getJobs(jobsChan, i)
 	}
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < forkedRequests; i++ {
 		select {
 		case resp := <-jobsChan:
 			allJobs = append(allJobs, resp...)
@@ -95,18 +88,29 @@ func (j *JenkinsClient) GetJobs() ([]jobPreviewElement, error) {
 	return allJobs, nil
 }
 
-// GetRecentBuilds - return the most recent builds that have taken place on the configured
-// jenkins instance
-func (j *JenkinsClient) GetRecentBuilds() ([]buildPreviewElement, error) {
-	return []buildPreviewElement{}, nil
+func (j *JenkinsClient) getJobs(jobsChan chan []jobPreviewElement, page int) {
+	startingIndex := page * requestSlice
+	endingIndex := (page + 1) * requestSlice
+
+	raw := j.get("api", map[string]string{
+		"tree":    fmt.Sprintf("jobs[name]{%d,%d}", startingIndex, endingIndex),
+		"wrapper": "jobs",
+	})
+
+	jobs := new(jobsResponse)
+	if err := fromXMLTo(raw, jobs); err != nil {
+		jobsChan <- nil
+	}
+
+	jobsChan <- jobs.Jobs
 }
 
-// GetBuilds - http://localhost:8080/api/xml?tree=jobs[name,builds[number,building,result,url]]&xpath=//job[name[.=%22prod_build%22]]/build&wrapper=builds
+// GetBuilds - http://localhost:8080/api/xml?tree=jobs[name,builds[number,building,result,url,duration,estimated,timestamp]]&xpath=//job[name[.=%22prod_build%22]]/build&wrapper=builds
 func (j *JenkinsClient) GetBuilds(jobName string) ([]buildPreviewElement, error) {
 	jobBuildsXpath := fmt.Sprintf("//job[name[.=\"%s\"]]/build", jobName)
 
 	raw := j.get("api", map[string]string{
-		"tree":    "jobs[name,builds[number,building,result,url]]",
+		"tree":    "jobs[name,builds[number,building,result,url,duration,estimatedDuration,timestamp]]",
 		"xpath":   jobBuildsXpath,
 		"wrapper": "builds",
 	})

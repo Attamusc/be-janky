@@ -9,7 +9,7 @@ const BuildList = React.createClass({
   render() {
     return (
       <div className="builds-list">
-        <Infinite className="collection" containerHeight={this.props.height} elementHeight={133}>
+        <Infinite className="collection" containerHeight={this.props.height} elementHeight={65}>
           {this._genBuildsList().toArray()}
         </Infinite>
       </div>
@@ -20,8 +20,8 @@ const BuildList = React.createClass({
     const name = this.props.jobName;
 
     return this.props.builds.map((build) => {
-      const key = `${build.get('name')}#${build.get('number')}`;
-      return <BuildListItem key={key} jobName={name} build={build}/>;
+      const key = `${name}#${build.get('number')}`;
+      return <BuildListItem key={key} jobName={name} build={build} />;
     });
   }
 });

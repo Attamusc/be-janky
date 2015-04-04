@@ -1,17 +1,33 @@
 /*** Colors ***/
-$primary-color: color("materialize-red", "lighten-2") !default;
-$primary-color-light: false !default;
-$primary-color-dark: false !default;
-@if not $primary-color-light {
-  $primary-color-light: lighten($primary-color, 15%);
-}
-@if not $primary-color-dark {
-  $primary-color-dark: darken($primary-color, 15%);
-}
+/*$primary-color: color("materialize-red", "lighten-2") !default;*/
+/*$primary-color-light: false !default;*/
+/*$primary-color-dark: false !default;*/
+/*@if not $primary-color-light {*/
+  /*$primary-color-light: lighten($primary-color, 15%);*/
+/*}*/
+/*@if not $primary-color-dark {*/
+  /*$primary-color-dark: darken($primary-color, 15%);*/
+/*}*/
 
-$secondary-color: color("teal", "lighten-1") !default;
+/*$secondary-color: color("teal", "lighten-1") !default;*/
+/*$success-color: color("green", "base") !default;*/
+/*$error-color: color("red", "base") !default;*/
+/*$link-color: color("light-blue", "darken-1") !default;*/
+
+$text-icon-color: #FFFFFF;
+$accent-color: #607D8B;
+$primary-text-color: #212121;
+$secondary-text-color: #727272;
+$divider-color: #B6B6B6;
+
+$primary-color: #2196F3 !default;
+$primary-color-light: #BBDEFB !default;
+$primary-color-dark: #1976D2 !default;
+$secondary-color: $accent-color !default;
+
 $success-color: color("green", "base") !default;
 $error-color: color("red", "base") !default;
+
 $link-color: color("light-blue", "darken-1") !default;
 
 /*** Badges ***/

@@ -17,7 +17,6 @@ import (
 func buildAPIMux() *web.Mux {
 	api := web.New()
 
-	api.Get("/api/recent", routes.Index)
 	api.Get("/api/jobs", routes.Jobs)
 	api.Get("/api/jobs/:jobName", routes.Job)
 	api.Get("/api/jobs/:jobName/:buildId", routes.Build)
