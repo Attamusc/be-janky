@@ -1,5 +1,6 @@
 [ignore]
 .*/node_modules/jsxhint/test/fixtures/test_flow.js
+.*/node_modules/webpack
 
 [include]
 

@@ -57,6 +57,11 @@ type buildPreviewElement struct {
 	Estimated int    `xml:"estimatedDuration" json:"estimated"`
 }
 
+type forkedResponse struct {
+	page int
+	data interface{}
+}
+
 // GetJenkinsClient - Returns jenkins client using environment configured attributes
 func GetJenkinsClient() *JenkinsClient {
 	jenkinsURL := os.Getenv("JENKINS_URL")
@@ -69,26 +74,38 @@ func GetJenkinsClient() *JenkinsClient {
 
 // GetJobs - return the configured jobs for this jenkins instance
 func (j *JenkinsClient) GetJobs() ([]jobPreviewElement, error) {
-	var allJobs []jobPreviewElement
-
-	jobsChan := make(chan []jobPreviewElement)
+	requestsChan := make(chan forkedResponse)
 	forkedRequests := int(math.Ceil(10 / requestSlice))
 
+	forkedRequestResponses := make([]interface{}, forkedRequests)
+
 	for i := 0; i < forkedRequests; i++ {
-		go j.getJobs(jobsChan, i)
+		go j.getJobs(requestsChan, i)
 	}
 
 	for i := 0; i < forkedRequests; i++ {
 		select {
-		case resp := <-jobsChan:
-			allJobs = append(allJobs, resp...)
+		case resp := <-requestsChan:
+			forkedRequestResponses[resp.page] = resp.data
+		}
+	}
+
+	var allJobs []jobPreviewElement
+
+	for i := 0; i < forkedRequests; i++ {
+		jobResponses := forkedRequestResponses[i].([]jobPreviewElement)
+
+		if len(jobResponses) > 0 {
+			for _, job := range jobResponses {
+				allJobs = append(allJobs, job)
+			}
 		}
 	}
 
 	return allJobs, nil
 }
 
-func (j *JenkinsClient) getJobs(jobsChan chan []jobPreviewElement, page int) {
+func (j *JenkinsClient) getJobs(responseChan chan forkedResponse, page int) {
 	startingIndex := page * requestSlice
 	endingIndex := (page + 1) * requestSlice
 
@@ -99,10 +116,16 @@ func (j *JenkinsClient) getJobs(jobsChan chan []jobPreviewElement, page int) {
 
 	jobs := new(jobsResponse)
 	if err := fromXMLTo(raw, jobs); err != nil {
-		jobsChan <- nil
+		log.Errorf("Error unmarshalling jobs response: %s", err)
+		responseChan <- forkedResponse{
+			data: []jobPreviewElement{},
+		}
 	}
 
-	jobsChan <- jobs.Jobs
+	responseChan <- forkedResponse{
+		page: page,
+		data: jobs.Jobs,
+	}
 }
 
 // GetBuilds - http://localhost:8080/api/xml?tree=jobs[name,builds[number,building,result,url,duration,estimated,timestamp]]&xpath=//job[name[.=%22prod_build%22]]/build&wrapper=builds
