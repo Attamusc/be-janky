@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -74,35 +75,14 @@ func GetJenkinsClient() *JenkinsClient {
 
 // GetJobs - return the configured jobs for this jenkins instance
 func (j *JenkinsClient) GetJobs() ([]jobPreviewElement, error) {
-	requestsChan := make(chan forkedResponse)
-	forkedRequests := int(math.Ceil(10 / requestSlice))
+	jobs := makeForkedRequest(j.getJobs)
+	jobElements := make([]jobPreviewElement, len(jobs))
 
-	forkedRequestResponses := make([]interface{}, forkedRequests)
-
-	for i := 0; i < forkedRequests; i++ {
-		go j.getJobs(requestsChan, i)
+	for i, elem := range jobs {
+		jobElements[i] = elem.(jobPreviewElement)
 	}
 
-	for i := 0; i < forkedRequests; i++ {
-		select {
-		case resp := <-requestsChan:
-			forkedRequestResponses[resp.page] = resp.data
-		}
-	}
-
-	var allJobs []jobPreviewElement
-
-	for i := 0; i < forkedRequests; i++ {
-		jobResponses := forkedRequestResponses[i].([]jobPreviewElement)
-
-		if len(jobResponses) > 0 {
-			for _, job := range jobResponses {
-				allJobs = append(allJobs, job)
-			}
-		}
-	}
-
-	return allJobs, nil
+	return jobElements, nil
 }
 
 func (j *JenkinsClient) getJobs(responseChan chan forkedResponse, page int) {
@@ -223,4 +203,40 @@ func toQueryParams(params map[string]string) url.Values {
 	}
 
 	return qsValues
+}
+
+func makeForkedRequest(handler func(chan forkedResponse, int)) []interface{} {
+	requestsChan := make(chan forkedResponse)
+	forkedRequests := int(math.Ceil(10 / requestSlice))
+	forkedRequestResponses := make([]interface{}, forkedRequests)
+
+	for i := 0; i < forkedRequests; i++ {
+		go handler(requestsChan, i)
+	}
+
+	for i := 0; i < forkedRequests; i++ {
+		select {
+		case resp := <-requestsChan:
+			forkedRequestResponses[resp.page] = resp.data
+		}
+	}
+
+	var collectedResponses []interface{}
+
+	for i := 0; i < forkedRequests; i++ {
+		r := forkedRequestResponses[i]
+
+		if reflect.TypeOf(r).Kind() == reflect.Slice {
+			responses := reflect.ValueOf(r)
+			length := responses.Len()
+
+			if length > 0 {
+				for j := 0; j < length; j++ {
+					collectedResponses = append(collectedResponses, responses.Index(j).Interface())
+				}
+			}
+		}
+	}
+
+	return collectedResponses
 }
