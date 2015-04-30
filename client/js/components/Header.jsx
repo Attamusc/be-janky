@@ -1,4 +1,5 @@
 import React from 'react/addons';
+import { Link } from 'react-router';
 
 const Header = React.createClass({
   mixin: [React.PureRenderMixin],
@@ -7,7 +8,7 @@ const Header = React.createClass({
     return (
       <nav>
         <div className="nav-wrapper">
-          <a href="/" className="brand-logo">Be-Janky</a>
+          <Link to="jobs" className="brand-logo">Be-Janky</Link>
         </div>
       </nav>
     );

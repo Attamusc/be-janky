@@ -12,9 +12,10 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/franela/goreq"
 )
+
+var log = NewLogger()
 
 const requestSlice = 10.0
 

@@ -10,6 +10,10 @@ const BuildStore = Flux.createStore({
     return _builds;
   },
 
+  clearBuilds() {
+    _builds = new List();
+  },
+
   loadBuilds(job) {
     return api.loadBuilds(job)
     .then((data) => {
@@ -19,6 +23,7 @@ const BuildStore = Flux.createStore({
 }, function(payload) {
   switch (payload.actionType) {
   case "LOAD_BUILDS":
+    BuildStore.clearBuilds();
     BuildStore.loadBuilds(payload.job)
       .then(() => BuildStore.emitChange());
     break;

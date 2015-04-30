@@ -4,6 +4,7 @@ import { Map, List } from 'immutable';
 import BuildStore from '../stores/BuildStore';
 import JobActions from '../actions/JobActions';
 
+import BuildsLoading from '../components/BuildsLoading.jsx';
 import BuildList from '../components/BuildList.jsx';
 import EmptyBuildList from '../components/EmptyBuildList.jsx';
 
@@ -13,6 +14,7 @@ const Job = React.createClass({
   getInitialState() {
     return {
       height: window.innerHeight - 64,
+      loading: true,
       data: Map({
         builds: BuildStore.getBuilds()
       })
@@ -27,6 +29,7 @@ const Job = React.createClass({
   },
 
   componentWillReceiveProps(newProps) {
+    this.setState({ loading: true });
     JobActions.loadJobBuilds(newProps.params.name);
   },
 
@@ -43,12 +46,16 @@ const Job = React.createClass({
 
   storeDidChange() {
     this.setState({ data: this.state.data.set('builds', BuildStore.getBuilds()) });
+    this.setState({ loading: false });
   },
 
   render() {
     let innerContent;
 
-    if (this.state.data.get('builds').count()) {
+    if (this.state.loading) {
+      innerContent = <BuildsLoading />;
+    }
+    else if (this.state.data.get('builds').count()) {
       innerContent = <BuildList builds={this.state.data.get('builds')} jobName={this.props.params.name} height={this.state.height} />;
     }
     else {

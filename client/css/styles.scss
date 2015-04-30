@@ -1,4 +1,5 @@
 @import "vendor/materialize/materialize";
+@import "vendor/font-awesome/font-awesome";
 
 @mixin clearfix() {
   &:before,
@@ -152,4 +153,30 @@ nav {
   padding-left: 550px;
   position: relative;
   z-index: 0;
+}
+
+.loading {
+  padding-top: 30px;
+  text-align: center;
+
+  i {
+    margin-right: 10px;
+  }
+}
+
+.fa-spin {
+  -webkit-animation: fa-spin 1.5s infinite linear;
+  animation: fa-spin 1.5s infinite linear;
+}
+
+.small {
+  font-size: 20px;
+}
+
+.medium {
+  font-size: 30px;
+}
+
+.large {
+  font-size: 45px;
 }

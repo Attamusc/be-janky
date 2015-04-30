@@ -29,9 +29,6 @@ func attachMiddleware(m *http.ServeMux) *negroni.Negroni {
 	n := negroni.New()
 	re := render.New(render.Options{
 		IndentJSON: true,
-		Directory:  "templates",
-		Extensions: []string{".html", ".tmpl"},
-		Layout:     "application",
 	})
 
 	n.Use(negroni.NewRecovery())
@@ -41,6 +38,10 @@ func attachMiddleware(m *http.ServeMux) *negroni.Negroni {
 	n.Use(negroni.HandlerFunc(func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		context.Set(r, "render", re)
 		next(rw, r)
+	}))
+	n.Use(negroni.HandlerFunc(func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		next(rw, r)
+		context.Clear(r)
 	}))
 
 	n.UseHandler(m)
