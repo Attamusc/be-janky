@@ -1,32 +1,13 @@
 import React from 'react';
-import { Map, List } from 'immutable';
 import xhr from '../lib/xhr';
+
+import BuildInfo from '../components/BuildInfo.jsx';
+import ConsoleStream from '../components/ConsoleStream.jsx';
 
 const Build = React.createClass({
   _progressiveConsoleIntervalId: null,
 
   _consoleRequestInterval: 1000,
-
-  getInitialState() {
-    return {
-      data: Map({
-        build: Map({}),
-        consoleOffset: 0,
-        console: ''
-      })
-    };
-  },
-
-  componentWillMount() {
-    xhr({
-      url: '/api/jobs/' + this.props.params.name + '/' + this.props.params.number,
-      method: 'get'
-    })
-    .then((data) => {
-      this.setState({ data: this.state.data.set('build', data) });
-    })
-    .then(() => this._requestConsoleOutput());
-  },
 
   componentWillUnmount() {
     if (this._progressiveConsoleIntervalId) {
@@ -38,19 +19,11 @@ const Build = React.createClass({
   render() {
     const jobName = this.props.params.name;
     const jobNumber = this.props.params.number;
-    const build = this.state.data.get('build');
-    const consoleOutput = this.state.data.get('console');
 
     return (
       <div className="container">
-        <div className="build-detail">
-          <h1>{jobName}#{jobNumber}</h1>
-          <a href={build.get('url') + "console"} target="_blank">console</a>
-          <section className="console-output">
-            <h1>Console Output</h1>
-            <pre dangerouslySetInnerHTML={{__html: consoleOutput}} />
-          </section>
-        </div>
+        <BuildInfo name={jobName} number={jobNumber} />
+        <ConsoleStream name={jobName} number={jobNumber} />
       </div>
     );
   },

@@ -21,9 +21,6 @@ const Job = React.createClass({
     };
   },
 
-  _jobPollId: null,
-  _requestInterval: 2500,
-
   componentWillMount() {
     JobActions.loadJobBuilds(this.props.params.name);
   },
@@ -45,8 +42,10 @@ const Job = React.createClass({
   },
 
   storeDidChange() {
-    this.setState({ data: this.state.data.set('builds', BuildStore.getBuilds()) });
-    this.setState({ loading: false });
+    this.setState({
+      data: this.state.data.set('builds', BuildStore.getBuilds()),
+      loading: false
+    });
   },
 
   render() {

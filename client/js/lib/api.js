@@ -16,6 +16,21 @@ const api = {
     .then((data) => {
       return data.get('builds');
     });
+  },
+
+  loadBuild(job, number) {
+    return xhr({
+      url: '/api/jobs/' + job + '/' + number,
+      method: 'get'
+    });
+  },
+
+  loadBuildConsole(job, number, offset) {
+    return xhr({
+      url: '/api/jobs/' + job + '/' + number + '/console',
+      data: { start: offset },
+      method: 'get'
+    });
   }
 };
 

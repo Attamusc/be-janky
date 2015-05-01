@@ -10,6 +10,10 @@ const BuildStore = Flux.createStore({
     return _builds;
   },
 
+  getBuild() {
+    return _builds.first();
+  },
+
   clearBuilds() {
     _builds = new List();
   },
@@ -19,12 +23,24 @@ const BuildStore = Flux.createStore({
     .then((data) => {
       _builds = data;
     });
+  },
+
+  loadBuild(job, buildId) {
+    return api.loadBuild(job, buildId)
+    .then((data) => {
+      _builds = List([data]);
+    });
   }
 }, function(payload) {
   switch (payload.actionType) {
-  case "LOAD_BUILDS":
+  case 'LOAD_BUILDS':
     BuildStore.clearBuilds();
     BuildStore.loadBuilds(payload.job)
+      .then(() => BuildStore.emitChange());
+    break;
+  case 'LOAD_BUILD':
+    BuildStore.clearBuilds();
+    BuildStore.loadBuild(payload.job, payload.buildId)
       .then(() => BuildStore.emitChange());
     break;
   default:
